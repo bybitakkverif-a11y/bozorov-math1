@@ -3,7 +3,9 @@ name: Build Bozorov OMR APK
 
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 permissions:
@@ -22,12 +24,19 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Verify files
+      - name: Verify project files
         run: |
+          echo "Checking repository files..."
           pwd
           ls -la
-          test -f main.py
-          test -f requirements.txt
+          test -f main.py || {
+            echo "ERROR: main.py not found in repository root"
+            exit 1
+          }
+          test -f requirements.txt || {
+            echo "ERROR: requirements.txt not found"
+            exit 1
+          }
 
       - name: Install dependencies
         run: |
@@ -36,15 +45,15 @@ jobs:
 
       - name: Build APK
         run: |
-          flet build apk . \
-            --module-name main.py \
+          flet build apk \
+            --module-name main \
             --org uz.bozorovmath \
             --project "Bozorov OMR" \
-            --description "Bozorov Math Milliy Sertifikat Skaneri" \
-            --yes
+            --description "Bozorov Math Milliy Sertifikat Skaneri"
 
       - name: Locate APK
         run: |
+          echo "Searching for APK files..."
           find . -type f -name "*.apk" -print
 
       - name: Upload APK
